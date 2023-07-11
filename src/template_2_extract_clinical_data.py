@@ -38,7 +38,7 @@ def save_pd_to_csv(df, output_file):
     print(f"Clinical data dictionary saved to {output_file}")
 
 
-def feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name):
+def feature_extractor_per_patient_OLD(df, output_dir, feature_column_name, date_column_name, value_column_name):
     grouped_df = df.groupby('pseudoid_pid')
 
     for patient, data in grouped_df:
@@ -61,6 +61,56 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
 
 
 
+def feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name):
+    grouped_df = df.groupby('pseudoid_pid')
+
+
+    ## Read the hospitalization timeline csv file
+    general_data_file_name = "general_data"
+    hosp_timeline_file_name = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/dicts/" + general_data_file_name + "_hosp_timeline.csv" 
+    hosp_timeline_df = read_csv(hosp_timeline_file_name, sep=',')
+    # hosp_timeline = hosp_timeline_df[['pseudoid_pid', 'date_admission_hosp', 'date_discharge_hosp']]
+
+    ## Preprocess the date column
+    hosp_timeline_data = preprocess_data(hosp_timeline_df, 'date_admission_hosp')
+
+
+    for patient, data in grouped_df:
+        patient_df = pd.DataFrame()
+
+        ## Get the hospitalization timeline for the patient
+        patient_hosp_timeline = hosp_timeline_data[hosp_timeline_data['pseudoid_pid'] == patient]
+
+        ## Get the first hospitalization date
+        first_hosp_date = patient_hosp_timeline['date_admission_hosp'].min()
+
+        # ## Get the last hospitalization date
+        # last_hosp_date = patient_hosp_timeline['date_discharge_hosp'].max()
+
+        # ## Get the first and last hospitalization dates for the patient
+        # patient_hosp_timeline = patient_hosp_timeline[(patient_hosp_timeline['date_admission_hosp'] == first_hosp_date) | (patient_hosp_timeline['date_discharge_hosp'] == last_hosp_date)]
+        # print("patient_hosp_timeline: ", patient_hosp_timeline)
+
+        ## Function 
+        for feature_name, feature_data in data.groupby(feature_column_name):
+            min_date = first_hosp_date
+            ## derive the days from the first hospitalization date
+            feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
+
+            ## Convert value to numeric, handling non-numeric values
+            feature_data[value_column_name] = pd.to_numeric(feature_data[value_column_name], errors='coerce')
+
+            feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name, aggfunc='mean')
+            feature_data.columns = [f'day-{day}' for day in feature_data.columns]
+
+            patient_df = pd.concat([patient_df, feature_data])
+
+        patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
+        patient_df.to_csv(patient_df_file)
+
+
+
+
 def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name):
     # # Step 1: Read the CSV file into a DataFrame
     dir_CDA_features = "/home/jagh/Documents/01_UB/10_Conferences_submitted/11_Second_paper/00_dataset/03_Insel_dataset/01_Preprocessing_IDSC202101463_data_v13_20221214/"
@@ -76,15 +126,15 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     # Step 3: Categorize the data
     # Filter unique laboratory codes 'med_atc' with respective laboratory feature names 'med_medication'
     # feature_column_name = 'name'
-    o2_feature_list = df[feature_column_name].unique().tolist()
+    feature_list = df[feature_column_name].unique().tolist()
 
-    print('Feature_names: ', o2_feature_list)
-    print('Feature_names: ', len(o2_feature_list))
+    print('Feature_names: ', feature_list)
+    print('Feature_names: ', len(feature_list))
 
     ## Step 4: Save the data per patient in a CSV file
     ## Convert the list to a dataframe
 
-    clinical_feature_df = pd.DataFrame(o2_feature_list, columns=[file_name])
+    clinical_feature_df = pd.DataFrame(feature_list, columns=[file_name])
     medications_file_name = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/dicts/" + file_name + ".csv"
     save_pd_to_csv(clinical_feature_df, os.path.join(dir_CDA_features, medications_file_name))
 
@@ -170,7 +220,11 @@ launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_c
 # for column in date_columns:
 #     general_data_df[column] = pd.to_datetime(general_data_df[column])
 
-# # Group the data by 'pseudoid_pid'
-# grouped = general_data_df.groupby('pseudoid_pid')
 
-# print("general_data_df: ", general_data_df.head())
+# ## Create a new DataFrame with selected columns
+# hosp_timeline = general_data_df[['pseudoid_pid', 'date_admission_hosp', 'date_discharge_hosp']]
+# print("new_df: ", hosp_timeline.head())
+
+# ## Save the data per patient in a CSV file
+# hosp_timeline_file_name = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/dicts/" + general_data_file_name + "_hosp_timeline.csv" 
+# save_pd_to_csv(hosp_timeline, hosp_timeline_file_name)
