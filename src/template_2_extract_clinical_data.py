@@ -60,7 +60,6 @@ def feature_extractor_per_patient_OLD(df, output_dir, feature_column_name, date_
         patient_dt.to_csv(patient_df_file)
 
 
-
 def feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name):
     grouped_df = df.groupby('pseudoid_pid')
 
@@ -101,7 +100,7 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
             feature_data[value_column_name] = pd.to_numeric(feature_data[value_column_name], errors='coerce')
 
             feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name, aggfunc='mean')
-            feature_data.columns = [f'day-{day}' for day in feature_data.columns]
+            feature_data.columns = [f'{day}' for day in feature_data.columns]
 
             patient_df = pd.concat([patient_df, feature_data])
 
@@ -109,8 +108,7 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
         patient_df.to_csv(patient_df_file)
 
 
-
-
+####################
 def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name):
     # # Step 1: Read the CSV file into a DataFrame
     dir_CDA_features = "/home/jagh/Documents/01_UB/10_Conferences_submitted/11_Second_paper/00_dataset/03_Insel_dataset/01_Preprocessing_IDSC202101463_data_v13_20221214/"
@@ -128,8 +126,8 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     # feature_column_name = 'name'
     feature_list = df[feature_column_name].unique().tolist()
 
-    print('Feature_names: ', feature_list)
-    print('Feature_names: ', len(feature_list))
+    # print('Feature_names: ', feature_list)
+    # print('Feature_names: ', len(feature_list))
 
     ## Step 4: Save the data per patient in a CSV file
     ## Convert the list to a dataframe
@@ -147,11 +145,18 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
 
 ################################################################################################################
-file_name = "ris_data"
-sep=','
-feature_column_name = 'ris_examination_type'
-date_column_name = 'ris_examination_begin'
-value_column_name = 'value'
+# file_name = "vasopressors"
+# sep=';'
+# feature_column_name = 'atc_code'
+# date_column_name = 'date'
+# value_column_name = 'amount'
+
+
+file_name = "lab_data"
+sep=';'
+feature_column_name = 'lab_name'
+date_column_name = 'lab_req_date'
+value_column_name = 'lab_nval'
 
 launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name)
 
@@ -222,7 +227,7 @@ launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_c
 
 
 # ## Create a new DataFrame with selected columns
-# hosp_timeline = general_data_df[['pseudoid_pid', 'date_admission_hosp', 'date_discharge_hosp']]
+# hosp_timeline = general_data_df[['study_id','pseudoid_pid', 'date_admission_hosp', 'date_discharge_hosp']]
 # print("new_df: ", hosp_timeline.head())
 
 # ## Save the data per patient in a CSV file
