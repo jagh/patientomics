@@ -194,6 +194,10 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     ## Preprocess the date column
     hosp_timeline_data = preprocess_data(hosp_timeline_df, 'date_admission_hosp')
 
+    ## Set the store list
+    potential_long_covid_patients = []
+    potential_long_covid_patients.append('pseudoid_pid')
+
     for patient, data in grouped_df:
         patient_df = pd.DataFrame()
 
@@ -271,15 +275,24 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                 total_count = 0
                 total_count = CTA_column_count + CTTH_column_count
 
-                if total_count >= 1:
+                ## Parameter to include at least 2 CTA or CTTH in total
+                if total_count >= 2:
                     # Save filtered dataframe to a CSV file
                     output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
                     patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
                     patient_df.to_csv(patient_df_file)
 
+                    ## Added the patient to the list of potential long covid patients
+                    potential_long_covid_patients.append(patient)
+
         else:
             # print("No columns with headers greater than 5 found.")
             pass
+
+    ## Save the list of potential long covid patients to a CSV file
+    potential_long_covid_patients_file = os.path.join(output_dir, f'potential_long_covid_patients.csv')
+    potential_long_covid_patients_df = pd.DataFrame(potential_long_covid_patients)
+    potential_long_covid_patients_df.to_csv(potential_long_covid_patients_file, index=False)
 
 
 ################################################################################################################
