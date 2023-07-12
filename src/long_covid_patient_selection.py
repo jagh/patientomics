@@ -235,108 +235,51 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
         # ##############################################################
         patient_df.columns = pd.to_numeric(patient_df.columns, errors='coerce')
 
-        # Filter columns based on column headers greater than 5
-        filtered_columns = [col for col in patient_df.columns if col > 120]
-
+        ###############
+        ## Criteria 1: Filter columns based on column headers greater than 120
+        filtered_criteria_1 = [col for col in patient_df.columns if col > 120]
+        
         # Check if any columns meet the criteria
-        if filtered_columns:
-            filtered_df = patient_df[filtered_columns]
+        if filtered_criteria_1:
+            # filtered_df = patient_df[filtered_criteria_1]
             # print("Filtered dataframe saved successfully.")
 
-            # Save filtered dataframe to a CSV file
-            output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
-            patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
-            patient_df.to_csv(patient_df_file)
+            ###############
+            ## Criteria 2: Check if there are more that two patient_df.columns between 0 and 60
+            filtered_criteria_2 = [col for col in patient_df.columns if col > 0]
+
+            if len(filtered_criteria_2) >= 2:
+                # print("patient_df: ", patient_df.head())
+
+                ###############
+                ## Criteria 3: Check if there are more that two images labaled as 'CTA' or 'CTTH in the patient_df
+                patient_df_t = patient_df.T
+
+                ## if CTA is in the column, then count the number of CTA
+                if 'CTA' in patient_df_t.columns:
+                    CTA_column_count = patient_df_t.columns.tolist().count('CTA')
+                else:
+                    CTA_column_count = 0
+
+                ## if CTTH is in the column, then count the number of CTTH
+                if 'CTTH' in patient_df_t.columns:
+                    CTTH_column_count = patient_df_t.columns.tolist().count('CTTH')
+                else:
+                    CTTH_column_count = 0
+
+                ## Sum the CTA_count and CTTH_count
+                total_count = 0
+                total_count = CTA_column_count + CTTH_column_count
+
+                if total_count >= 1:
+                    # Save filtered dataframe to a CSV file
+                    output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
+                    patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
+                    patient_df.to_csv(patient_df_file)
+
         else:
             # print("No columns with headers greater than 5 found.")
             pass
-
-
-
-
-        # ##############################################################
-        # # Filter columns based on column headers greater than 5
-        # filtered_columns = [col for col in patient_df.columns if col > 5]
-
-        # # Check if any columns meet the criteria
-        # if filtered_columns:
-        #     filtered_df = patient_df[filtered_columns]
-        #     print("Filtered dataframe saved successfully.")
-
-        #     # Save filtered dataframe to a CSV file
-        #     output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
-        #     patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
-        #     patient_df.to_csv(patient_df_file)
-        # else:
-        #     print("No columns with headers greater than 5 found.")
-
-        # if filtered_df.shape[1] > 0:
-        #     ## Save the patient data
-        #     output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
-        #     patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
-        #     patient_df.to_csv(patient_df_file)
-
-        #     print("##################################################")
-        #     print("patient_df: ", patient_df.head())
-
-
-    
-        # output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
-        # patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
-        # patient_df.to_csv(patient_df_file)
-
-        # print("##################################################")
-        # print("patient_df: ", patient_df.head())
-
-
-        ##############################################################
-        ## Step 3: Only save the patients that follow the criteria:
-        ## - At least 2 medical imaging in the first 60 days from the first hospitalization date
-        ## - At least 1 medical imaging after 120 days from the first hospitalization date
-
-
-        ## Step 3.2: Filter the patients' medical imaging ('ris_examination_type') follow-up with the following criteria:
-        ## - At least 1 medical imaging after 120 days from the first hospitalization date
-
-        # patient_df = patient_df[patient_df['ris_examination_begin'] >= 120]
-        # patient_df = patient_df.groupby('patient_id').filter(lambda x: len(x) >= 1)
-
-
-            
-            
-            
-            
-            # ## Step 3.1: Filter the patients medical imaging ('ris_examination_type') follow-up with the following criteria:
-            # ## - At least 2 medical imaging in the first 60 days from the first hospitalization date
-            # # patient_medical_imaging = data[data['ris_examination_type'].isin(['CTA', 'CTTH', 'TH'])]
-            # patient_medical_imaging['days'] = (patient_medical_imaging['ris_examination_begin'] - first_hosp_date).dt.days
-
-            # ## Step 3.2: Filter the patients medical imaging ('ris_examination_type') follow-up with the following criteria:
-            # ## - At least 1 medical imaging after 120 days from the first hospitalization date
-            # patient_medical_imaging = patient_medical_imaging[patient_medical_imaging['days'] >= 120]
-            
-            # print("patient_medical_imaging: ", patient_medical_imaging.head())
-
-
-
-
-
-
-
-
-    # ## Step 5: Categorize the data
-    # # Filter unique laboratory codes 'med_atc' with respective laboratory feature names 'med_medication'
-    # feature_list = df[feature_column_name].unique().tolist()
-
-    # ## Step 6: Convert the feature list to a dataframe and save the dictionary in a CSV file
-    # clinical_feature_df = pd.DataFrame(feature_list, columns=[file_name])
-    # medications_file_name = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/dicts/" + file_name + ".csv"
-    # save_pd_to_csv(clinical_feature_df, os.path.join(dir_CDA_features, medications_file_name))
-
-    # ## Step 7: Save the data per patient in a CSV file
-    # output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/" + file_name + "_features/"
-    # feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name)
-
 
 
 ################################################################################################################
