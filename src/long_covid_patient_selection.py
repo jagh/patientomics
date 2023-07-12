@@ -200,6 +200,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
     for patient, data in grouped_df:
         patient_df = pd.DataFrame()
+        full_data = pd.DataFrame()
 
         ## Get the hospitalization timeline for the patient
         patient_hosp_timeline = hosp_timeline_data[hosp_timeline_data['pseudoid_pid'] == patient]
@@ -210,6 +211,10 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
         ## Filter the patients medical imaging ('ris_examination_type') follow-up with the following criteria:
         for feature_name, feature_data in data.groupby(feature_column_name):
             min_date = first_hosp_date
+
+            # ## Get the additional data
+            # # additional_data = pd.concat([patient_df, feature_data, feature_data[date_column_name]])
+            # full_data = pd.concat([full_data, feature_data])
 
             ## derive the days from the first hospitalization date
             feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
@@ -280,8 +285,22 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                     # Save filtered dataframe to a CSV file
                     output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
                     patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
-                    patient_df.to_csv(patient_df_file)
+                    # patient_df.to_csv(patient_df_file)
+                    
+                    ## Transpose the patient_df dataframe
+                    patient_df_t2 = patient_df.T
 
+                    ## set the patient_df_t2 index with the column name 'days' in the first column
+                    patient_df_t2.index.name = 'days'
+                    patient_df_t2.to_csv(patient_df_file)
+
+                    ####################
+                    ## Save the additional data to the dataframe
+                    # full_patient_df_t = full_data
+                    # full_patient_df_t['pseudoid_pid'] = patient  
+                    # full_patient_df_t.to_csv(patient_df_file)
+                
+                    ####################
                     ## Added the patient to the list of potential long covid patients
                     potential_long_covid_patients.append(patient)
 
@@ -301,6 +320,8 @@ sep=','
 feature_column_name = 'ris_examination_type'
 date_column_name = 'ris_examination_begin'
 value_column_name = 'value'
+
+
 
 launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name)
 
