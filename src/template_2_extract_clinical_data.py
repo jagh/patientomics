@@ -108,26 +108,69 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
         patient_df.to_csv(patient_df_file)
 
 
-####################
+
+def medications_feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name):
+    grouped_df = df.groupby('pseudoid_pid')
+
+    ## Read the hospitalization timeline csv file
+    general_data_file_name = "general_data"
+    hosp_timeline_file_name = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/dicts/" + general_data_file_name + "_hosp_timeline.csv" 
+    hosp_timeline_df = read_csv(hosp_timeline_file_name, sep=',')
+    # hosp_timeline = hosp_timeline_df[['pseudoid_pid', 'date_admission_hosp', 'date_discharge_hosp']]
+
+    ## Preprocess the date column
+    hosp_timeline_data = preprocess_data(hosp_timeline_df, 'date_admission_hosp')
+
+
+    for patient, data in grouped_df:
+        patient_df = pd.DataFrame()
+
+        ## Get the hospitalization timeline for the patient
+        patient_hosp_timeline = hosp_timeline_data[hosp_timeline_data['pseudoid_pid'] == patient]
+
+        ## Get the first hospitalization date
+        first_hosp_date = patient_hosp_timeline['date_admission_hosp'].min()
+
+
+        ## Function 
+        for feature_name, feature_data in data.groupby(feature_column_name):
+            min_date = first_hosp_date
+            ## derive the days from the first hospitalization date
+            feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
+
+            # Check if any value in 'med_given_dose' column is null
+            if feature_data['med_given_dose'].isnull().any():
+                # Convert 'med_given_dose' to numeric, handling non-numeric values
+                feature_data['med_given_dose'] = pd.to_numeric(feature_data['med_given_dose'], errors='coerce')
+            else:
+                ## Convert value to numeric, handling non-numeric values
+                feature_data[value_column_name] = pd.to_numeric(feature_data[value_column_name], errors='coerce')
+
+            # feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name, aggfunc='mean')
+            feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values='med_given_dose', aggfunc='mean')
+            feature_data.columns = [f'{day}' for day in feature_data.columns]
+
+            patient_df = pd.concat([patient_df, feature_data])
+
+        patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
+        patient_df.to_csv(patient_df_file)
+
+
+
+##############################################################################################################
 def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name):
     # # Step 1: Read the CSV file into a DataFrame
     dir_CDA_features = "/home/jagh/Documents/01_UB/10_Conferences_submitted/11_Second_paper/00_dataset/03_Insel_dataset/01_Preprocessing_IDSC202101463_data_v13_20221214/"
-    # file_name = "oxygen_supply"
     csv_file_path = os.path.join(dir_CDA_features, file_name + ".csv")
     df = read_csv(csv_file_path, sep=sep)
 
     # Step 2: Preprocess and categorize the data
-    # date_column_name = 'date'
     df = preprocess_data(df, date_column_name)
     print("df: ", df.head())
 
     # Step 3: Categorize the data
     # Filter unique laboratory codes 'med_atc' with respective laboratory feature names 'med_medication'
-    # feature_column_name = 'name'
     feature_list = df[feature_column_name].unique().tolist()
-
-    # print('Feature_names: ', feature_list)
-    # print('Feature_names: ', len(feature_list))
 
     ## Step 4: Save the data per patient in a CSV file
     ## Convert the list to a dataframe
@@ -139,8 +182,10 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
     ## Step 5: Save the data per patient in a CSV file
     output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/" + file_name + "_features/"
-    # value_column_name = 'dose'
     feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name)
+
+    # ## Medications launcher
+    # medications_feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name)
 
 
 
@@ -152,11 +197,38 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 # value_column_name = 'amount'
 
 
-file_name = "lab_data"
+# file_name = "lab_data"
+# sep=';'
+# feature_column_name = 'lab_name'
+# date_column_name = 'lab_req_date'
+# value_column_name = 'lab_nval'
+
+
+# file_name = "medications"
+# sep=';'
+# feature_column_name = 'med_atc'
+# date_column_name = 'med_date'
+# value_column_name = 'med_dose'
+
+# file_name = "o2_data_pdms"
+# sep=';'
+# feature_column_name = 'name'
+# date_column_name = 'datetime'
+# value_column_name = 'value'
+
+# file_name = "oxygen_supply"
+# sep=';'
+# feature_column_name = 'name'
+# date_column_name = 'date'
+# value_column_name = 'dose'
+
+
+file_name = "o2_gabe"
 sep=';'
-feature_column_name = 'lab_name'
-date_column_name = 'lab_req_date'
-value_column_name = 'lab_nval'
+feature_column_name = 'type'
+date_column_name = 'date'
+value_column_name = 'value'
+
 
 launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name)
 
