@@ -198,9 +198,11 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     potential_long_covid_patients = []
     potential_long_covid_patients.append('pseudoid_pid')
 
+    ## Set the full data list
+    full_data = pd.DataFrame()
+
     for patient, data in grouped_df:
         patient_df = pd.DataFrame()
-        full_data = pd.DataFrame()
 
         ## Get the hospitalization timeline for the patient
         patient_hosp_timeline = hosp_timeline_data[hosp_timeline_data['pseudoid_pid'] == patient]
@@ -285,7 +287,9 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                     # Save filtered dataframe to a CSV file
                     output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
                     patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
-                    # patient_df.to_csv(patient_df_file)
+
+                    # Create the directory if it doesn't exist
+                    os.makedirs(output_dir, exist_ok=True)
                     
                     ## Transpose the patient_df dataframe
                     patient_df_t2 = patient_df.T
@@ -311,6 +315,12 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     potential_long_covid_patients_file = os.path.join(output_dir, f'potential_long_covid_patients.csv')
     potential_long_covid_patients_df = pd.DataFrame(potential_long_covid_patients)
     potential_long_covid_patients_df.to_csv(potential_long_covid_patients_file, index=False)
+
+    ####################
+    ## Save the additional data to the dataframe
+    full_patient_df_t_file = os.path.join(output_dir, f'potential_long_covid_patients_ris_information.csv')
+    full_patient_df_t = full_data
+    full_patient_df_t.to_csv(full_patient_df_t_file, index=False)
 
 
 ################################################################################################################
