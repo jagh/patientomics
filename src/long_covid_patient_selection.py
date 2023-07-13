@@ -212,9 +212,9 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
         for feature_name, feature_data in data.groupby(feature_column_name):
             min_date = first_hosp_date
 
-            # ## Get the additional data
-            # # additional_data = pd.concat([patient_df, feature_data, feature_data[date_column_name]])
-            # full_data = pd.concat([full_data, feature_data])
+            ## Get the additional data
+            # additional_data = pd.concat([patient_df, feature_data, feature_data[date_column_name]])
+            full_data = pd.concat([full_data, feature_data])
 
             ## derive the days from the first hospitalization date
             feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
@@ -290,15 +290,14 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                     ## Transpose the patient_df dataframe
                     patient_df_t2 = patient_df.T
 
-                    ## set the patient_df_t2 index with the column name 'days' in the first column
+                    # set the patient_df_t2 index with the column name 'days' in the first column
                     patient_df_t2.index.name = 'days'
                     patient_df_t2.to_csv(patient_df_file)
 
                     ####################
-                    ## Save the additional data to the dataframe
+                    # ## Save the additional data to the dataframe
                     # full_patient_df_t = full_data
-                    # full_patient_df_t['pseudoid_pid'] = patient  
-                    # full_patient_df_t.to_csv(patient_df_file)
+                    # full_patient_df_t.to_csv(patient_df_file, index=False)
                 
                     ####################
                     ## Added the patient to the list of potential long covid patients
