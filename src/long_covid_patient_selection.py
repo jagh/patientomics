@@ -199,10 +199,11 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     potential_long_covid_patients.append('pseudoid_pid')
 
     ## Set the full data list
-    full_data = pd.DataFrame()
+    long_covid_selected = pd.DataFrame()
 
     for patient, data in grouped_df:
         patient_df = pd.DataFrame()
+        full_data = pd.DataFrame()
 
         ## Get the hospitalization timeline for the patient
         patient_hosp_timeline = hosp_timeline_data[hosp_timeline_data['pseudoid_pid'] == patient]
@@ -214,15 +215,16 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
         for feature_name, feature_data in data.groupby(feature_column_name):
             min_date = first_hosp_date
 
+            ## derive the days from the first hospitalization date
+            feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
+
+            # ## derive the days from the first hospitalization date
+            # feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
+
+            ##############
             ## Get the additional data
-            # additional_data = pd.concat([patient_df, feature_data, feature_data[date_column_name]])
             full_data = pd.concat([full_data, feature_data])
-
-            ## derive the days from the first hospitalization date
-            feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
-
-            ## derive the days from the first hospitalization date
-            feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
+            ##############
 
             ## Convert value to numeric, handling non-numeric values
             feature_data[value_column_name] = pd.to_numeric(feature_data[value_column_name], errors='coerce')
@@ -259,7 +261,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
             ## Criteria 2: Check if there are more that two patient_df.columns between 0 and 60
             filtered_criteria_2 = [col for col in patient_df.columns if col > 0]
 
-            if len(filtered_criteria_2) >= 2:
+            if len(filtered_criteria_2) >= 1:
                 # print("patient_df: ", patient_df.head())
 
                 ###############
@@ -283,7 +285,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                 total_count = CTA_column_count + CTTH_column_count
 
                 ## Parameter to include at least 2 CTA or CTTH in total
-                if total_count >= 2:
+                if total_count >= 1:
                     # Save filtered dataframe to a CSV file
                     output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
                     patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
@@ -302,6 +304,9 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                     # ## Save the additional data to the dataframe
                     # full_patient_df_t = full_data
                     # full_patient_df_t.to_csv(patient_df_file, index=False)
+
+                    ## Add selected patient to the long covid selected dataframe
+                    long_covid_selected = pd.concat([long_covid_selected, full_data])
                 
                     ####################
                     ## Added the patient to the list of potential long covid patients
@@ -312,15 +317,14 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
             pass
 
     ## Save the list of potential long covid patients to a CSV file
-    potential_long_covid_patients_file = os.path.join(output_dir, f'potential_long_covid_patients.csv')
+    potential_long_covid_patients_file = os.path.join(output_dir, f'potential_long_covid_patients_pseudoid_pid.csv')
     potential_long_covid_patients_df = pd.DataFrame(potential_long_covid_patients)
     potential_long_covid_patients_df.to_csv(potential_long_covid_patients_file, index=False)
 
     ####################
     ## Save the additional data to the dataframe
-    full_patient_df_t_file = os.path.join(output_dir, f'potential_long_covid_patients_ris_information.csv')
-    full_patient_df_t = full_data
-    full_patient_df_t.to_csv(full_patient_df_t_file, index=False)
+    long_covid_selected_file = os.path.join(output_dir, f'potential_long_covid_patients_ris_information.csv')
+    long_covid_selected.to_csv(long_covid_selected_file, index=False)
 
 
 ################################################################################################################
