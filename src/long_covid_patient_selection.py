@@ -177,7 +177,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     df = df[df['ris_examination_begin'] >= '2020-03-01']
 
     ## Step 3.2: Filter the patients with 'ris_examination_type' == 'CTA, CTTH, TH'
-    df = df[df['ris_examination_type'].isin(['CTA', 'CTTH', 'TH'])]
+    df = df[df['ris_examination_type'].isin(['CTA', 'CTHATHAB', 'CTHATHOB', 'CTHTH', 'CTHTHABD', 'CTTH', 'CTTHABD', 'CTTHOB', 'CTUB', 'IMPCTTH', 'IMPCTTHAB', 'TH'])]
     # print("df: ", df.head())
 
 
@@ -250,7 +250,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
         ###############
         ## Criteria 1: Filter columns based on column headers greater than 120
-        filtered_criteria_1 = [col for col in patient_df.columns if col > 120]
+        filtered_criteria_1 = [col for col in patient_df.columns if col > 150]
         
         # Check if any columns meet the criteria
         if filtered_criteria_1:
@@ -258,8 +258,8 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
             # print("Filtered dataframe saved successfully.")
 
             ###############
-            ## Criteria 2: Check if there are more that two patient_df.columns between 0 and 60
-            filtered_criteria_2 = [col for col in patient_df.columns if col > 0]
+            ## Criteria 2: Check if there are more that two CTs between 0 and 60
+            filtered_criteria_2 = [col for col in patient_df.columns if col > -15]
 
             if len(filtered_criteria_2) >= 1:
                 # print("patient_df: ", patient_df.head())
@@ -267,22 +267,28 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                 ###############
                 ## Criteria 3: Check if there are more that two images labaled as 'CTA' or 'CTTH in the patient_df
                 patient_df_t = patient_df.T
+                # print("patient_df_t: ", patient_df_t.head())
 
-                ## if CTA is in the column, then count the number of CTA
-                if 'CTA' in patient_df_t.columns:
-                    CTA_column_count = patient_df_t.columns.tolist().count('CTA')
-                else:
-                    CTA_column_count = 0
-
-                ## if CTTH is in the column, then count the number of CTTH
-                if 'CTTH' in patient_df_t.columns:
-                    CTTH_column_count = patient_df_t.columns.tolist().count('CTTH')
-                else:
-                    CTTH_column_count = 0
-
-                ## Sum the CTA_count and CTTH_count
                 total_count = 0
-                total_count = CTA_column_count + CTTH_column_count
+                columns = patient_df_t.columns.tolist()
+
+                ##  List of items to count
+                items_to_count = [
+                    'CTA', 'CTHATHAB', 'CTHATHOB', 'CTHTH', 'CTHTHABD',
+                    'CTTH', 'CTTHABD', 'CTTHOB', 'IMPCTTH', 'IMPCTTHAB'
+                ]
+
+                ## Count the items in the columns
+                for item in items_to_count:
+                    item_count = columns.count(item)
+                    total_count += item_count
+
+                # ## Print the total count
+                # if total_count > 0:
+                #     print("+ Positive total_count:", total_count)
+                # else:
+                #     print("+ Negative total_count:", total_count)
+                
 
                 ## Parameter to include at least 2 CTA or CTTH in total
                 if total_count >= 1:
