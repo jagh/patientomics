@@ -141,7 +141,6 @@ def sort_dataframe_columns(dataframe):
 
 
 
-
 ##############################################################################################################
 def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name):
     """
@@ -181,6 +180,12 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     # print("df: ", df.head())
 
 
+    ## Step 3.3: Filter the patients with 'ris_examination_type' == 'Altersheim, Verstorben'
+
+
+
+
+
     ##############################################################
     ##############################################################
     ## Step 4: Calculate the days from the first hospitalization date
@@ -188,18 +193,37 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
     ## Read the hospitalization timeline csv file
     general_data_file_name = "general_data"
-    hosp_timeline_file_name = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/dicts/" + general_data_file_name + "_hosp_timeline.csv" 
-    hosp_timeline_df = read_csv(hosp_timeline_file_name, sep=',')
+    # hosp_timeline_file_name = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/dicts/" + general_data_file_name + "_hosp_timeline.csv" 
+    hosp_timeline_file_name = "/home/jagh/Documents/01_UB/10_Conferences_submitted/11_Second_paper/00_dataset/03_Insel_dataset/01_Preprocessing_IDSC202101463_data_v13_20221214/" + general_data_file_name + ".csv" 
+    hosp_timeline_df = read_csv(hosp_timeline_file_name, sep=';')
+
+    # ## Filter the hosp_timeline_df by patients that was discharged 'discharge_type' as Verstorben or Zuhause
+    # hosp_timeline_df = hosp_timeline_df[hosp_timeline_df['discharge_type'].isin(['Verstorben', 'Zuhause'])]
 
     ## Preprocess the date column
     hosp_timeline_data = preprocess_data(hosp_timeline_df, 'date_admission_hosp')
 
-    ## Set the store list
-    potential_long_covid_patients = []
-    potential_long_covid_patients.append('pseudoid_pid')
+    # ## Set the store list
+    # potential_long_covid_patients = []
+    # potential_long_covid_patients.append('pseudoid_pid')
 
-    ## Set the full data list
-    long_covid_selected = pd.DataFrame()
+    # ## Set the full data list
+    # long_covid_selected = pd.DataFrame()
+
+    ## Set the store list for pseudoid_pid and discharge_type
+    deceased_patients = []
+    deceased_patients.append('pseudoid_pid, discharge_type')
+    ## Set the dataframe to store the ris_information
+    ris_deceased_patients_selected = pd.DataFrame()
+
+
+    ## Set the store list for pseudoid_pid and discharge_type
+    discharged_patients_home = []
+    discharged_patients_home.append('pseudoid_pid, discharge_type')
+    ## Set the dataframe to store the ris_information
+    ris_discharged_patients_selected = pd.DataFrame()
+
+    
 
     for patient, data in grouped_df:
         patient_df = pd.DataFrame()
@@ -210,6 +234,20 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
         ## Get the first hospitalization date
         first_hosp_date = patient_hosp_timeline['date_admission_hosp'].min()
+
+        ###########################################################
+        ## Get the discharge_tye for the pseudoid_pid == patient
+        row = hosp_timeline_df[hosp_timeline_df['pseudoid_pid'] == patient]
+        discharge_type = row[['discharge_type']]
+
+        ## Get the date_death for the pseudoid_pid == patient
+        date_death = row[['date_death']]
+        ## Normalize the date_death column
+        date_death = pd.to_datetime(date_death['date_death'], errors='coerce')
+        delta_date_death = (date_death - first_hosp_date).dt.days
+        # print("delta_date_death: ", delta_date_death.values[0])
+        #############################################################
+        
 
         ## Filter the patients medical imaging ('ris_examination_type') follow-up with the following criteria:
         for feature_name, feature_data in data.groupby(feature_column_name):
@@ -248,89 +286,69 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
         # ##############################################################
         patient_df.columns = pd.to_numeric(patient_df.columns, errors='coerce')
 
-        ###############
-        ## Criteria 1: Filter columns based on column headers greater than 120
-        filtered_criteria_1 = [col for col in patient_df.columns if col > 150]
+        # print("+ discharge_type: ", discharge_type.values[0][0])
+        # print("+ patient_df: ", patient_df.head())
+        # print("+ full_data: ", full_data.head())
         
-        # Check if any columns meet the criteria
-        if filtered_criteria_1:
-            # filtered_df = patient_df[filtered_criteria_1]
-            # print("Filtered dataframe saved successfully.")
 
-            ###############
-            ## Criteria 2: Check if there are more that two CTs between 0 and 60
-            filtered_criteria_2 = [col for col in patient_df.columns if col > -15]
+        # print('discharge_type: ', discharge_type.values[0][0])
 
-            if len(filtered_criteria_2) >= 1:
-                # print("patient_df: ", patient_df.head())
+        ## Add the discharge_type to the full_data dataframe
+        try:
+            if discharge_type.values[0][0] == 'Verstorben':
+                ## check if the patient died before 60 days of the first day of hospitalization
+                if delta_date_death.values[0] < 60:
+                    ## Added the patient to the list of deceased_patients
+                    deceased_patients.append((patient, discharge_type.values[0][0]))
+                    # print("+ delta_date_death: ", delta_date_death.values[0])
 
-                ###############
-                ## Criteria 3: Check if there are more that two images labaled as 'CTA' or 'CTTH in the patient_df
-                patient_df_t = patient_df.T
-                # print("patient_df_t: ", patient_df_t.head())
-
-                total_count = 0
-                columns = patient_df_t.columns.tolist()
-
-                ##  List of items to count
-                items_to_count = [
-                    'CTA', 'CTHATHAB', 'CTHATHOB', 'CTHTH', 'CTHTHABD',
-                    'CTTH', 'CTTHABD', 'CTTHOB', 'IMPCTTH', 'IMPCTTHAB'
-                ]
-
-                ## Count the items in the columns
-                for item in items_to_count:
-                    item_count = columns.count(item)
-                    total_count += item_count
-
-                # ## Print the total count
-                # if total_count > 0:
-                #     print("+ Positive total_count:", total_count)
-                # else:
-                #     print("+ Negative total_count:", total_count)
+                    ## Add selected patient to the ris_deceased_patients_selected dataframe
+                    ris_deceased_patients_selected = pd.concat([ris_deceased_patients_selected, full_data])
                 
+            elif discharge_type.values[0][0] == 'Entlassung':
+                ## check if the patient has not medical imaging after 120 days of the first day of hospitalization
+                if patient_df.columns[-1] < 120:
+                    ## Added the patient to the list of discharged_patients_home
+                    discharged_patients_home.append((patient, discharge_type.values[0][0]))   
+                    # print("+ delta MI: ", patient_df.columns[-1])
 
-                ## Parameter to include at least 2 CTA or CTTH in total
-                if total_count >= 1:
-                    # Save filtered dataframe to a CSV file
-                    output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/03_long_covid_potential_patients/"
-                    patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
-
-                    # Create the directory if it doesn't exist
-                    os.makedirs(output_dir, exist_ok=True)
-                    
-                    ## Transpose the patient_df dataframe
-                    patient_df_t2 = patient_df.T
-
-                    # set the patient_df_t2 index with the column name 'days' in the first column
-                    patient_df_t2.index.name = 'days'
-                    patient_df_t2.to_csv(patient_df_file)
-
-                    ####################
-                    # ## Save the additional data to the dataframe
-                    # full_patient_df_t = full_data
-                    # full_patient_df_t.to_csv(patient_df_file, index=False)
-
-                    ## Add selected patient to the long covid selected dataframe
-                    long_covid_selected = pd.concat([long_covid_selected, full_data])
+                    ## Add selected patient to the ris_discharged_patients_selected dataframe
+                    ris_discharged_patients_selected = pd.concat([ris_discharged_patients_selected, full_data])
                 
-                    ####################
-                    ## Added the patient to the list of potential long covid patients
-                    potential_long_covid_patients.append(patient)
-
-        else:
-            # print("No columns with headers greater than 5 found.")
+        except IndexError:
+            # full_data['discharge_type'] = 'NaN'
             pass
 
-    ## Save the list of potential long covid patients to a CSV file
-    potential_long_covid_patients_file = os.path.join(output_dir, f'potential_long_covid_patients_pseudoid_pid.csv')
-    potential_long_covid_patients_df = pd.DataFrame(potential_long_covid_patients)
-    potential_long_covid_patients_df.to_csv(potential_long_covid_patients_file, index=False)
+        
+    output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/05_data_exploration/02_preprocessing_NC/"                  
+    # ## Save the list of potential long covid patients to a CSV file
+    # potential_long_covid_patients_file = os.path.join(output_dir, f'potential_severe_pseudoid_pid.csv')
+    # potential_long_covid_patients_df = pd.DataFrame(potential_long_covid_patients)
+    # potential_long_covid_patients_df.to_csv(potential_long_covid_patients_file, index=False)
 
-    ####################
-    ## Save the additional data to the dataframe
-    long_covid_selected_file = os.path.join(output_dir, f'potential_long_covid_patients_ris_information.csv')
-    long_covid_selected.to_csv(long_covid_selected_file, index=False)
+    # ####################
+    # ## Save the additional data to the dataframe
+    # long_covid_selected_file = os.path.join(output_dir, f'potential_long_covid_patients_ris_information.csv')
+    # long_covid_selected.to_csv(long_covid_selected_file, index=False)
+    
+    ## Save the list of deceased_patients to a CSV file
+    deceased_patients_file = os.path.join(output_dir, f'deceased_patients_pseudoid_pid.csv')
+    deceased_patients_df = pd.DataFrame(deceased_patients)
+    deceased_patients_df.to_csv(deceased_patients_file, index=False)
+
+    ## Save the ris information of the deceased_patients to a CSV file
+    ris_deceased_patients_selected_file = os.path.join(output_dir, f'deceased_patients_ris_information.csv')
+    ris_deceased_patients_selected.to_csv(ris_deceased_patients_selected_file, index=False)
+
+    ## Save the list of discharged_patients_home to a CSV file
+    discharged_patients_home_file = os.path.join(output_dir, f'discharged_patients_home_pseudoid_pid.csv')
+    discharged_patients_home_df = pd.DataFrame(discharged_patients_home)
+    discharged_patients_home_df.to_csv(discharged_patients_home_file, index=False)
+
+    ## Save the ris information of the discharged_patients_home to a CSV file
+    ris_discharged_patients_selected_file = os.path.join(output_dir, f'discharged_patients_home_ris_information.csv')
+    ris_discharged_patients_selected.to_csv(ris_discharged_patients_selected_file, index=False)
+
 
 
 ################################################################################################################
