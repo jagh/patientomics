@@ -184,8 +184,6 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
 
 
-
-
     ##############################################################
     ##############################################################
     ## Step 4: Calculate the days from the first hospitalization date
@@ -224,7 +222,6 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     ris_discharged_patients_selected = pd.DataFrame()
 
     
-
     for patient, data in grouped_df:
         patient_df = pd.DataFrame()
         full_data = pd.DataFrame()
@@ -277,21 +274,9 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
             patient_df = patient_df.reindex(sorted(patient_df.columns, key=lambda x: int(x) if x.isdigit() else float('inf')), axis=1)
 
 
-        # ##############################################################
-        # ## Step 5: Save patients containing at least 1 colume with header name => 120 days
-        # other_df = patient_df[patient_df.columns[patient_df.columns.str.contains('30')]]
-        # # print("other_df: ", other_df.head())
 
-
-        # ##############################################################
+        ##############################################################
         patient_df.columns = pd.to_numeric(patient_df.columns, errors='coerce')
-
-        # print("+ discharge_type: ", discharge_type.values[0][0])
-        # print("+ patient_df: ", patient_df.head())
-        # print("+ full_data: ", full_data.head())
-        
-
-        # print('discharge_type: ', discharge_type.values[0][0])
 
         ## Add the discharge_type to the full_data dataframe
         try:
@@ -306,14 +291,37 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                     ris_deceased_patients_selected = pd.concat([ris_deceased_patients_selected, full_data])
                 
             elif discharge_type.values[0][0] == 'Entlassung':
-                ## check if the patient has not medical imaging after 120 days of the first day of hospitalization
-                if patient_df.columns[-1] < 120:
+
+                ## Criteria 1: Filter columns based on column headers greater than 120
+                filtered_criteria_1 = [col for col in patient_df.columns if col > 60]
+
+                if filtered_criteria_1:
+                    print("Potential long covid patient: ", patient)
+                    
+                else:
+                    print("Control patient: ", patient)
                     ## Added the patient to the list of discharged_patients_home
                     discharged_patients_home.append((patient, discharge_type.values[0][0]))   
                     # print("+ delta MI: ", patient_df.columns[-1])
 
                     ## Add selected patient to the ris_discharged_patients_selected dataframe
                     ris_discharged_patients_selected = pd.concat([ris_discharged_patients_selected, full_data])
+                
+
+
+                # if len(filtered_criteria_1) > 0:
+                # ## check if the patient has not medical imaging after 120 days of the first day of hospitalization
+                # if patient_df.columns[-1] > 60:
+                #     print("+ delta MI: ", patient_df.columns[-1])
+                # elif patient_df.columns[-2] > 60:
+                #     print("+ delta MI: ", patient_df.columns[-2])
+                # else:
+                #     ## Added the patient to the list of discharged_patients_home
+                #     discharged_patients_home.append((patient, discharge_type.values[0][0]))   
+                #     # print("+ delta MI: ", patient_df.columns[-1])
+
+                #     ## Add selected patient to the ris_discharged_patients_selected dataframe
+                #     ris_discharged_patients_selected = pd.concat([ris_discharged_patients_selected, full_data])
                 
         except IndexError:
             # full_data['discharge_type'] = 'NaN'
@@ -331,14 +339,14 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     # long_covid_selected_file = os.path.join(output_dir, f'potential_long_covid_patients_ris_information.csv')
     # long_covid_selected.to_csv(long_covid_selected_file, index=False)
     
-    ## Save the list of deceased_patients to a CSV file
-    deceased_patients_file = os.path.join(output_dir, f'deceased_patients_pseudoid_pid.csv')
-    deceased_patients_df = pd.DataFrame(deceased_patients)
-    deceased_patients_df.to_csv(deceased_patients_file, index=False)
+    # ## Save the list of deceased_patients to a CSV file
+    # deceased_patients_file = os.path.join(output_dir, f'deceased_patients_pseudoid_pid.csv')
+    # deceased_patients_df = pd.DataFrame(deceased_patients)
+    # deceased_patients_df.to_csv(deceased_patients_file, index=False)
 
-    ## Save the ris information of the deceased_patients to a CSV file
-    ris_deceased_patients_selected_file = os.path.join(output_dir, f'deceased_patients_ris_information.csv')
-    ris_deceased_patients_selected.to_csv(ris_deceased_patients_selected_file, index=False)
+    # ## Save the ris information of the deceased_patients to a CSV file
+    # ris_deceased_patients_selected_file = os.path.join(output_dir, f'deceased_patients_ris_information.csv')
+    # ris_deceased_patients_selected.to_csv(ris_deceased_patients_selected_file, index=False)
 
     ## Save the list of discharged_patients_home to a CSV file
     discharged_patients_home_file = os.path.join(output_dir, f'discharged_patients_home_pseudoid_pid.csv')
