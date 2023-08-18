@@ -60,9 +60,9 @@ def feature_extractor_per_patient_OLD(df, output_dir, feature_column_name, date_
         patient_dt.to_csv(patient_df_file)
 
 
+
 def feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name):
     grouped_df = df.groupby('pseudoid_pid')
-
 
     ## Read the hospitalization timeline csv file
     general_data_file_name = "general_data"
@@ -104,9 +104,21 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
 
             patient_df = pd.concat([patient_df, feature_data])
 
-        patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
-        patient_df.to_csv(patient_df_file)
+            ## Transpose the dataframe
+            patient_df_T = patient_df.T
 
+            ## Add the 'days' column name to the dataframe at the position 0
+            patient_df_T.insert(0, 'days', patient_df_T.index)
+            
+            ## Set the column 'days' as an double type
+            # patient_df_T['days'] = patient_df_T['days'].astype(float)
+            patient_df_T['days'] = pd.to_numeric(patient_df_T['days'])
+
+            ## Sort the dataframe by 'days' column
+            patient_df_T = patient_df_T.sort_values(by=['days'])
+
+        patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
+        patient_df_T.to_csv(patient_df_file, index=False)
 
 
 def medications_feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name):
@@ -181,7 +193,12 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
 
     ## Step 5: Save the data per patient in a CSV file
-    output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/" + file_name + "_features/"
+    output_dir = "/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/06_clinical_data/" + file_name + "_features/"
+    
+    ## Create a new diretory for 'output_dir'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
     feature_extractor_per_patient(df, output_dir, feature_column_name, date_column_name, value_column_name)
 
     # ## Medications launcher
@@ -196,13 +213,11 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 # date_column_name = 'date'
 # value_column_name = 'amount'
 
-
-# file_name = "lab_data"
-# sep=';'
-# feature_column_name = 'lab_name'
-# date_column_name = 'lab_req_date'
-# value_column_name = 'lab_nval'
-
+file_name = "lab_data"
+sep=';'
+feature_column_name = 'lab_name'
+date_column_name = 'lab_req_date'
+value_column_name = 'lab_nval'
 
 # file_name = "medications"
 # sep=';'
@@ -223,12 +238,11 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 # value_column_name = 'dose'
 
 
-file_name = "o2_gabe"
-sep=';'
-feature_column_name = 'type'
-date_column_name = 'date'
-value_column_name = 'value'
-
+# file_name = "o2_gabe"
+# sep=';'
+# feature_column_name = 'type'
+# date_column_name = 'date'
+# value_column_name = 'value'
 
 launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name)
 
