@@ -194,6 +194,8 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     ## Preprocess the date column
     hosp_timeline_data = preprocess_data(hosp_timeline_df, 'date_admission_hosp')
 
+
+    ##############################################################
     ## Set the store list
     potential_long_covid_patients = []
     potential_long_covid_patients.append('pseudoid_pid')
