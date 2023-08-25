@@ -1,5 +1,4 @@
 
-
 import csv
 
 # Read the CSV file
