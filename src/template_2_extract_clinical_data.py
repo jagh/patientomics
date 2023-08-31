@@ -99,7 +99,8 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
             ## Convert value to numeric, handling non-numeric values
             feature_data[value_column_name] = pd.to_numeric(feature_data[value_column_name], errors='coerce')
 
-            feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name, aggfunc='mean')
+            # feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name, aggfunc='mean')
+            feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name)
             feature_data.columns = [f'{day}' for day in feature_data.columns]
 
             patient_df = pd.concat([patient_df, feature_data])
@@ -176,6 +177,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     csv_file_path = os.path.join(dir_CDA_features, file_name + ".csv")
     df = read_csv(csv_file_path, sep=sep)
 
+
     # Step 2: Preprocess and categorize the data
     df = preprocess_data(df, date_column_name)
     print("df: ", df.head())
@@ -183,6 +185,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
     # Step 3: Categorize the data
     # Filter unique laboratory codes 'med_atc' with respective laboratory feature names 'med_medication'
     feature_list = df[feature_column_name].unique().tolist()
+
 
     ## Step 4: Save the data per patient in a CSV file
     ## Convert the list to a dataframe
