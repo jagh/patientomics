@@ -90,33 +90,39 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
         # patient_hosp_timeline = patient_hosp_timeline[(patient_hosp_timeline['date_admission_hosp'] == first_hosp_date) | (patient_hosp_timeline['date_discharge_hosp'] == last_hosp_date)]
         # print("patient_hosp_timeline: ", patient_hosp_timeline)
 
+
         ## Function 
         for feature_name, feature_data in data.groupby(feature_column_name):
-            min_date = first_hosp_date
-            ## derive the days from the first hospitalization date
-            feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
 
-            ## Convert value to numeric, handling non-numeric values
-            feature_data[value_column_name] = pd.to_numeric(feature_data[value_column_name], errors='coerce')
+            if 'Creatinin' in feature_name:
+                # print('feature_name: ', feature_name)
+                pass
+            else:
+                min_date = first_hosp_date
+                ## derive the days from the first hospitalization date
+                feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
 
-            # feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name, aggfunc='mean')
-            feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name)
-            feature_data.columns = [f'{day}' for day in feature_data.columns]
+                ## Convert value to numeric, handling non-numeric values
+                feature_data[value_column_name] = pd.to_numeric(feature_data[value_column_name], errors='coerce')
 
-            patient_df = pd.concat([patient_df, feature_data])
+                # feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name, aggfunc='mean')
+                feature_data = feature_data.pivot_table(index=feature_column_name, columns='days', values=value_column_name)
+                feature_data.columns = [f'{day}' for day in feature_data.columns]
 
-            ## Transpose the dataframe
-            patient_df_T = patient_df.T
+                patient_df = pd.concat([patient_df, feature_data])
 
-            ## Add the 'days' column name to the dataframe at the position 0
-            patient_df_T.insert(0, 'days', patient_df_T.index)
-            
-            ## Set the column 'days' as an double type
-            # patient_df_T['days'] = patient_df_T['days'].astype(float)
-            patient_df_T['days'] = pd.to_numeric(patient_df_T['days'])
+                ## Transpose the dataframe
+                patient_df_T = patient_df.T
 
-            ## Sort the dataframe by 'days' column
-            patient_df_T = patient_df_T.sort_values(by=['days'])
+                ## Add the 'days' column name to the dataframe at the position 0
+                patient_df_T.insert(0, 'days', patient_df_T.index)
+                
+                ## Set the column 'days' as an double type
+                # patient_df_T['days'] = patient_df_T['days'].astype(float)
+                patient_df_T['days'] = pd.to_numeric(patient_df_T['days'])
+
+                ## Sort the dataframe by 'days' column
+                patient_df_T = patient_df_T.sort_values(by=['days'])
 
         patient_df_file = os.path.join(output_dir, f'patient_{patient}.csv')
         patient_df_T.to_csv(patient_df_file, index=False)
