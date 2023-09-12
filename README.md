@@ -18,4 +18,6 @@ Step 2: Use `long_covid_patient_selection.py` and `severe_covid_patients_selecti
 
 Step 3: Utilize `long_covid_data_exploration.ipynb` and `negative_controls_data_exploration.ipynb` to determine quartile ranges for medical images, find acute and chronic stage CT scan pairs, and create histograms for each patient group.
 
+Step 4: Employ `analyzing_labmarkers_for_long_covid.ipynb` to create a matrix of clinical features for N patients at a single-time-point (n_day=1 or n_day=7) and save it as a CSV file.
 
+Step 5. Use `analyzing_labmarkers_for_long_covid.ipynb` to visualize correlations among laboratory features for potential long COVID patients using a single-time-point matrix by: a. Grouping features by laboratory families. b. Sorting features by average similarity distances. c. Creating a clustering map to visualize data patterns among potential long COVID patients.
