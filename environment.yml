@@ -1,0 +1,21 @@
+name: patientomics
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9.16   # Update Python version
+  - cudatoolkit=11.8.0   # Ensure it matches your CUDA version
+  - pytorch=2.0.1   # Update PyTorch version
+  - torchvision=0.10.1   # Update torchvision version
+  - torchaudio=0.9.1   # Update torchaudio version
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - scipy
+  - jupyter   
+  - jupyterlab   # 
+  - tsai=0.3.7   # Update tsai version
+  - fastai=2.7.12   # Update fastai version
+  - fastcore=1.5.29   # Update fastcore version
