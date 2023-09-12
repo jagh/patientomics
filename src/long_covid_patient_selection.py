@@ -139,9 +139,6 @@ def sort_dataframe_columns(dataframe):
 
 
 
-
-
-
 ##############################################################################################################
 def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, value_column_name):
     """
