@@ -22,7 +22,7 @@ Step 4: Employ `analyzing_labmarkers_for_long_covid.ipynb` to create a matrix of
 
 Step 5. Use `analyzing_labmarkers_for_long_covid.ipynb` to visualize correlations among laboratory features for potential long COVID patients using a single-time-point matrix by: a. Grouping features by laboratory families. b. Sorting features by average similarity distances. c. Creating a clustering map to visualize data patterns among potential long COVID patients.
 
-# Repository tech stack to be implemented
+### Repository tech stack to be implemented
 - [ ] Actions Importer
 - [ ] SLSA Generic Generator
 - [ ] Python Application
