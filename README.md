@@ -26,16 +26,13 @@ Step 5. Use `analyzing_labmarkers_for_long_covid.ipynb` to visualize correlation
 ### Tasks to Do:
 - [ ] Enhance the "average function" within the feature extractor for individual patients in template to clinical time-series data extraction class.
 - [ ] Create a script to identify NII files based on specific parameters such as Thorax, LF, 1.0mm, kernel, and others, depending on the type of medical images (CTA, CTTH, CTTHABD, TH, etc.) they belong to.
+   - For **CTA images**, look for files like:
+     - Thorax_LE_WT_1.0_I26f_3_PE_xxxx.nii
+     - Thorax_LF_1.0_I70f_3_LCAD_xxxx.nii
 
-    For CTA images, look for files like:
-        + Thorax_LE_WT_1.0_I26f_3_PE_xxxx.nii
-        + Thorax_LF_1.0_I70f_3_LCAD_xxxx.nii
-        
-    For CTTHABD, look for files like:
-        + ThAbd_nat_LF_1.0_I70f_3_LCAD_xxxx.nii
-        + ThAbd_nat_WT_1.0_I31f_3__xxxx.nii
-
-
+   - For **CTTHABD**, look for files like:
+     - ThAbd_nat_LF_1.0_I70f_3_LCAD_xxxx.nii
+     - ThAbd_nat_WT_1.0_I31f_3__xxxx.nii
 
 
 ### Repository tech stack to be implemented
