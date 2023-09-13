@@ -22,6 +22,12 @@ Step 4: Employ `analyzing_labmarkers_for_long_covid.ipynb` to create a matrix of
 
 Step 5. Use `analyzing_labmarkers_for_long_covid.ipynb` to visualize correlations among laboratory features for potential long COVID patients using a single-time-point matrix by: a. Grouping features by laboratory families. b. Sorting features by average similarity distances. c. Creating a clustering map to visualize data patterns among potential long COVID patients.
 
+
+### Tasks to Do:
+- [ ] Enhance the "average function" within the feature extractor for individual patients in template to clinical time-series data extraction class.
+- [ ] Develop a script to identify NII files based on specific parameters such as Thorax, LF, 1.0mm, kernel, and others, depending on the type of medical images (CTA, CTTH, CTTHABD, TH, etc.) they belong to.
+
+
 ### Repository tech stack to be implemented
 - [ ] Actions Importer
 - [ ] SLSA Generic Generator
