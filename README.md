@@ -24,9 +24,10 @@ Step 5. Use `analyzing_labmarkers_for_long_covid.ipynb` to visualize correlation
 
 
 ### Tasks to Do:
+- [ ] Develop a labeling script for the TSDataset, based on criteria such as Length of Stay (LOS) and mortality at 7, 15, 60 days.
 - [ ] Enhance the "average function" within the feature extractor for individual patients in template to clinical time-series data extraction class.
-   - Specifically check lab parameters that have double values, like Basopphile, Eosinophile:
-   
+   - Verify lab parameters with double values, such as Basopphile, Eosinophile:
+
 | Parameter                 | Test Name                      | Result  | Unit  | Reference Range  | Date and Time        |
 |---------------------------|--------------------------------|---------|-------|-------------------|-----------------------|
 | C-reaktives Protein       | CRP                            | 321     | mg/L  | 321 < 5           | 2021-04-11 06:55:00  |
