@@ -26,16 +26,17 @@ Step 5. Use `analyzing_labmarkers_for_long_covid.ipynb` to visualize correlation
 ### Tasks to Do:
 - [ ] Enhance the "average function" within the feature extractor for individual patients in template to clinical time-series data extraction class.
    - Specifically check lab parameters that have double values, like Basopphile, Eosinophile:
-        |---------------------------|--------------------------------|---------|-------|-------------------|-----------------------|
-        | Parameter                 | Test Name                      | Result  | Unit  | Reference Range  | Date and Time        |
-        |---------------------------|--------------------------------|---------|-------|-------------------|-----------------------|
-        | C-reaktives Protein       | CRP                            | 321     | mg/L  | 321 < 5           | 2021-04-11 06:55:00  |
-        | Leukozyten                | Lc                             | 18.9    | G/L   | 18.9 3.00 - 10.5  | 2021-04-11 06:55:00  |
-        | Basophile                 | Absolute Basophil count        | 0.07    | G/L   | 0.07 0.00 - 0.15  | 2021-04-12 06:55:00  |
-        | Basophile                 | Absolute Basophil count        | 0       | G/L   | 0 0.00 - 0.15     | 2021-04-12 06:55:00  |
-        | Eosinophile               | Absolute Eosinophil count      | 0.21    | G/L   | 0.21 0.02 - 0.40  | 2021-04-12 06:55:00  |
-        | Eosinophile               | Absolute Eosinophil count      | 0       | G/L   | 0 0.02 - 0.40     | 2021-04-12 06:55:00  |
-        |---------------------------|--------------------------------|---------|-------|-------------------|-----------------------|
+
+|---------------------------|--------------------------------|---------|-------|-------------------|-----------------------|
+| Parameter                 | Test Name                      | Result  | Unit  | Reference Range  | Date and Time        |
+|---------------------------|--------------------------------|---------|-------|-------------------|-----------------------|
+| C-reaktives Protein       | CRP                            | 321     | mg/L  | 321 < 5           | 2021-04-11 06:55:00  |
+| Leukozyten                | Lc                             | 18.9    | G/L   | 18.9 3.00 - 10.5  | 2021-04-11 06:55:00  |
+| Basophile                 | Absolute Basophil count        | 0.07    | G/L   | 0.07 0.00 - 0.15  | 2021-04-12 06:55:00  |
+| Basophile                 | Absolute Basophil count        | 0       | G/L   | 0 0.00 - 0.15     | 2021-04-12 06:55:00  |
+| Eosinophile               | Absolute Eosinophil count      | 0.21    | G/L   | 0.21 0.02 - 0.40  | 2021-04-12 06:55:00  |
+| Eosinophile               | Absolute Eosinophil count      | 0       | G/L   | 0 0.02 - 0.40     | 2021-04-12 06:55:00  |
+|---------------------------|--------------------------------|---------|-------|-------------------|-----------------------|
 
 - [ ] Create a script to identify NII files based on specific parameters such as Thorax, LF, 1.0mm, kernel, and others, depending on the type of medical images (CTA, CTTH, CTTHABD, TH, etc.) they belong to.
    - For **CTA images**, look for files like:
