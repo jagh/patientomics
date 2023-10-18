@@ -217,6 +217,9 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
             ## derive the days from the first hospitalization date
             feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
 
+            ## Add the examination date to the dataframe
+            feature_data['exam_date'] = feature_data[date_column_name]
+
             # ## derive the days from the first hospitalization date
             # feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
 
