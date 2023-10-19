@@ -217,12 +217,6 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
             ## derive the days from the first hospitalization date
             feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
 
-            ## Add the examination date to the dataframe
-            feature_data['exam_date'] = feature_data[date_column_name]
-
-            # ## derive the days from the first hospitalization date
-            # feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
-
             ##############
             ## Get the additional data
             full_data = pd.concat([full_data, feature_data])
@@ -303,6 +297,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
                     
                     ## Transpose the patient_df dataframe
                     patient_df_t2 = patient_df.T
+
 
                     # set the patient_df_t2 index with the column name 'days' in the first column
                     patient_df_t2.index.name = 'days'
