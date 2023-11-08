@@ -24,12 +24,12 @@ def get_unique_subjects(input_file_path, output_file_path, column_name):
 
 
 if __name__ == "__main__":
-    input_dir_path = "/data/01_multiomics/02_long_covid_study/00_data_indexing/00_Bern/01_csv_to_process/"
-    input_file_name = "herkus_manual_selection_group2_230913-elegibles.csv"
+    input_dir_path = "/data/01_multiomics/02_long_covid_study/00_data_indexing/00_Bern/04_long_covid_list_adding_reviewed-marks/"
+    input_file_name = "long_covid_listg1g2-elegibles.csv"
     input_file_path = os.path.join(input_dir_path, input_file_name)
 
-    output_dir_path = "/data/01_multiomics/02_long_covid_study/00_data_indexing/00_Bern/02_csv_with_unique_PID/"
-    output_file_name = "herkus_manual_selection_group2_230913-elegibles-uniquePIDs.csv"
+    output_dir_path = "/data/01_multiomics/02_long_covid_study/00_data_indexing/00_Bern/05_outputfile/"
+    output_file_name = "long_covid_listg1g2-elegibles__.csv"
     output_file_path = os.path.join(output_dir_path, output_file_name)
 
     get_unique_subjects(input_file_path, output_file_path, column_name='PID')
