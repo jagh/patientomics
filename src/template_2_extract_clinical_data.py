@@ -70,18 +70,40 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
     hosp_timeline_df = read_csv(hosp_timeline_file_name, sep=',')
     # hosp_timeline = hosp_timeline_df[['pseudoid_pid', 'date_admission_hosp', 'date_discharge_hosp']]
 
-    ## Preprocess the date column
+    ## Preprocess the date format for 'date_admission_hosp' column
     hosp_timeline_data = preprocess_data(hosp_timeline_df, 'date_admission_hosp')
 
+    ##############################################################
+    ##############################################################
+    ## Preprocess the date format for 'covid19_begin' column 
+    hosp_timeline_data = preprocess_data(hosp_timeline_data, 'covid19_begin')
+    ##############################################################
+    ##############################################################
+        
 
     for patient, data in grouped_df:
         patient_df = pd.DataFrame()
+        print("patient: ", patient)
 
         ## Get the hospitalization timeline for the patient
         patient_hosp_timeline = hosp_timeline_data[hosp_timeline_data['pseudoid_pid'] == patient]
 
         ## Get the first hospitalization date
         first_hosp_date = patient_hosp_timeline['date_admission_hosp'].min()
+        print("first_hosp_date: ", first_hosp_date)
+
+
+        ##############################################################
+        ##############################################################
+        ## Get the covid begin date
+        covid19_begin_date = patient_hosp_timeline['covid19_begin']       
+        print("covid19_begin_date: ", covid19_begin_date.values[0])
+        # print("covid19_begin_date: ", type(covid19_begin_date))
+
+        ##############################################################
+        ##############################################################
+
+
 
         # ## Get the last hospitalization date
         # last_hosp_date = patient_hosp_timeline['date_discharge_hosp'].max()
@@ -98,9 +120,60 @@ def feature_extractor_per_patient(df, output_dir, feature_column_name, date_colu
                 # print('feature_name: ', feature_name)
                 pass
             else:
+
+                ##############################################################
+                ##############################################################
+                ## Alingning the dates with the hospitalization timeline
                 min_date = first_hosp_date
                 ## derive the days from the first hospitalization date
-                feature_data['days'] = (feature_data[date_column_name] - min_date).dt.days
+                feature_data['days'] = (feature_data[date_column_name] - first_hosp_date).dt.days
+                #############################################################
+                ##############################################################
+
+
+
+
+                ##############################################################
+                ##############################################################
+                ## Alingning the dates with the covid19_begin_date
+                min_date = covid19_begin_date
+                ## derive the days from the covid19_begin_date
+                feature_data['days'] = (feature_data[date_column_name] - covid19_begin_date.values[0]).dt.days
+                # feature_data['days'] = (covid19_begin_date - feature_data[date_column_name]).dt.days
+                ##############################################################
+
+
+                # ## Assuming covid19_begin_date is a Pandas datetime object
+                # covid19_begin_date = pd.to_datetime(covid19_begin_date)
+
+                # ## Convert the DatetimeArray to a NumPy array before subtraction
+                # # feature_data['days'] = (covid19_begin_date - feature_data[date_column_name]).dt.days
+                # feature_data['days'] = (feature_data[date_column_name] - covid19_begin_date).dt.days
+                ##############################################################
+
+
+
+                ##############################################################
+                ##############################################################
+                # ## Get the covid and hospitalization delta
+                covid_hosp_delta = covid19_begin_date.values[0] - first_hosp_date
+                ##############################################################
+
+
+
+                ##############################################################
+                ## Prints
+                print("---------------------------------------")
+                print("covid_hosp_delta: ", covid_hosp_delta)
+                print("feature_data['days']: ", feature_data['days'])
+                
+
+                ##############################################################
+                ##############################################################
+
+
+                
+
 
                 ## Convert value to numeric, handling non-numeric values
                 feature_data[value_column_name] = pd.to_numeric(feature_data[value_column_name], errors='coerce')
@@ -186,7 +259,7 @@ def launcher_pipeline(file_name, sep, feature_column_name, date_column_name, val
 
     # Step 2: Preprocess and categorize the data
     df = preprocess_data(df, date_column_name)
-    print("df: ", df.head())
+    # print("df: ", df.head())
 
     # Step 3: Categorize the data
     # Filter unique laboratory codes 'med_atc' with respective laboratory feature names 'med_medication'
