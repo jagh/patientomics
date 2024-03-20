@@ -1,6 +1,6 @@
 
 """
-The aim for this script is to create a time series clinical matrix from the clinical data.
+Step 4.1: The aim for this script is to create a time series clinical matrix from the clinical data.
 """
 
 
@@ -34,13 +34,9 @@ def impute_missing_values(df_lab_selected_day, df_lab_days, columns_to_impute):
     
     return df_lab_selected_day, imputed_values
 
-# # Read the list of unique patient IDs
-# dir_path = '/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/05_data_exploration/01_preprocessing_116_PLCP/'
-# # filename = os.path.join(dir_path, '116_plcp_mv_pseudoid_pid.csv')
-# filename = os.path.join(dir_path, 'deceased_patients_pseudoid_pid.csv')
-# df = pd.read_csv(filename, sep=',', header=0)
 
 
+##########################################
 ##########################################
 ## Read the list of unique patient IDs
 dir_path = '/data/01_multiomics/02_long_covid_study/04_lung_function_tests/03_FirstAnalysis/01_pairing_long_covid_clinical_data'
@@ -99,11 +95,9 @@ collection_df = pd.concat(patient_dfs, ignore_index=True)
 
 #####################################################
 ## Save the time series clinical matrix to a CSV file
-# output_csv_path = os.path.join(dir_path, f'116_plcp_lab_markers_day_Imputed-{init_day}_to_{end_day}.csv')
 output_csv_path = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}.csv')
 collection_df.to_csv(output_csv_path, index=False)
 
-# Save the imputed values to a separate file if needed
-# imputed_values_file = os.path.join(dir_path, f'116_plcp_lab_imputed_values.csv')
+## Save the imputed values to a separate file if needed
 imputed_values_file = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data.csv')
 pd.Series(all_imputed_values).to_csv(imputed_values_file, index=False, header=['Imputed_Values'])
