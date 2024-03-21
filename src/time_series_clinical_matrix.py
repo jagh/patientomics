@@ -99,5 +99,12 @@ output_csv_path = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{
 collection_df.to_csv(output_csv_path, index=False)
 
 ## Save the imputed values to a separate file if needed
-imputed_values_file = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data.csv')
-pd.Series(all_imputed_values).to_csv(imputed_values_file, index=False, header=['Imputed_Values'])
+imputed_values_file = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data_.csv')
+print(f"Imputed values saved to: {type(all_imputed_values)}")   
+print(f"Imputed values saved to: {all_imputed_values}")   
+
+
+
+
+# pd.Series(all_imputed_values).to_csv(imputed_values_file, index=False) #, header=['Imputed_Values'])
+
