@@ -53,9 +53,23 @@ def process_patient(patient_id, df_lab_days, columns_to_impute, n_neighbors=1):
     return pd.concat(patient_dfs_imputed, ignore_index=True), pd.concat(patient_dfs_original, ignore_index=True)
 
 def sort_clinical_features(collection_df, df_lab_features):
-    """Sort clinical features based on the list of laboratory features"""
+    """  Sort clinical features based on the list of laboratory features.
+         This function sorts the columns of the collection DataFrame based on 
+         the order of laboratory features and returns the sorted DataFrame. 
+    """
     sorted_columns = ['patient_id'] + df_lab_features['lab_parameter'].tolist()
     return collection_df.reindex(columns=sorted_columns)
+
+def normalize_df(df):
+    """Normalize DataFrame values between 0 and 1"""
+
+    from sklearn.preprocessing import MinMaxScaler
+
+    scaler = MinMaxScaler()
+    ## Exclude 'patient_id', 'patient_id', 'days' columns from normalization
+    scaled_values = scaler.fit_transform(df.iloc[:, 3:])  
+    df.iloc[:, 3:] = scaled_values
+    return df
 
 def main():
     # Read the list of unique patient IDs
@@ -121,6 +135,16 @@ def main():
     output_csv_path_original = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_original_sorted.csv')
     collection_df_imputed_sorted.to_csv(output_csv_path_imputed, index=False)
     collection_df_original_sorted.to_csv(output_csv_path_original, index=False)
+
+    # Normalize DataFrame values between 0 and 1
+    collection_df_imputed_sorted_normalized = normalize_df(collection_df_imputed_sorted)
+    collection_df_original_sorted_normalized = normalize_df(collection_df_original_sorted)
+
+    # Save the time series clinical matrices to CSV files
+    output_csv_path_imputed = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_imputed_sorted_normalized.csv')
+    output_csv_path_original = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_original_sorted_normalized.csv')
+    collection_df_imputed_sorted_normalized.to_csv(output_csv_path_imputed, index=False)
+    collection_df_original_sorted_normalized.to_csv(output_csv_path_original, index=False)
 
 if __name__ == "__main__":
     main()
