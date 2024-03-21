@@ -52,9 +52,14 @@ def process_patient(patient_id, df_lab_days, columns_to_impute, n_neighbors=1):
         
     return pd.concat(patient_dfs_imputed, ignore_index=True), pd.concat(patient_dfs_original, ignore_index=True)
 
+def sort_clinical_features(collection_df, df_lab_features):
+    """Sort clinical features based on the list of laboratory features"""
+    sorted_columns = ['patient_id'] + df_lab_features['lab_parameter'].tolist()
+    return collection_df.reindex(columns=sorted_columns)
+
 def main():
     # Read the list of unique patient IDs
-    dir_path = '/data/01_multiomics/02_long_covid_study/04_lung_function_tests/03_FirstAnalysis/01_pairing_long_covid_clinical_data'
+    dir_path = '/data/01_multiomics/02_long_covid_study/04_lung_function_tests/03_FirstAnalysis/02_time_series_matrices/'
     filename = os.path.join(dir_path, '03_LongCovid_IDS_keys_clinical_data_OnlyLabDATA.csv')
     df = pd.read_csv(filename, sep=',', header=0)
 
@@ -66,8 +71,13 @@ def main():
     init_day = 0
     end_day = 60
 
-    # Set path for lab data
+     # Set path for lab data
     dir_lab_path = '/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/06_clinical_data/lab_data_features/'
+
+
+    # Load the list of laboratory features
+    lab_features_filename = '/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/dicts/lab_parameter_grouping.csv'
+    df_lab_features = pd.read_csv(lab_features_filename, sep=',', header=0)
 
     # Iterate through the patient IDs
     for patient_id in df['pseudoid_pid']:
@@ -100,6 +110,17 @@ def main():
     output_csv_path_original = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_original.csv')
     collection_df_imputed.to_csv(output_csv_path_imputed, index=False)
     collection_df_original.to_csv(output_csv_path_original, index=False)
+
+
+    # Sort clinical features based on the list of laboratory features
+    collection_df_imputed_sorted = sort_clinical_features(collection_df_imputed, df_lab_features)
+    collection_df_original_sorted = sort_clinical_features(collection_df_original, df_lab_features)
+
+    # Save the time series clinical matrices to CSV files
+    output_csv_path_imputed = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_imputed_sorted.csv')
+    output_csv_path_original = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_original_sorted.csv')
+    collection_df_imputed_sorted.to_csv(output_csv_path_imputed, index=False)
+    collection_df_original_sorted.to_csv(output_csv_path_original, index=False)
 
 if __name__ == "__main__":
     main()
