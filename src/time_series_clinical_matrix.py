@@ -71,6 +71,10 @@ def normalize_df(df):
     df.iloc[:, 3:] = scaled_values
     return df
 
+def replace_nan_empty(df):
+    """Replace NaN or empty values with -1"""
+    return df.fillna(-1)
+
 def main():
     # Read the list of unique patient IDs
     dir_path = '/data/01_multiomics/02_long_covid_study/04_lung_function_tests/03_FirstAnalysis/02_time_series_matrices/'
@@ -82,8 +86,8 @@ def main():
     patient_dfs_original = []
 
     # Set the day range to be selected
-    init_day = 0
-    end_day = 60
+    init_day = 7
+    end_day = 8
 
      # Set path for lab data
     dir_lab_path = '/home/jagh/Documents/01_UB/MultiOmiX/patientomics/data/06_clinical_data/lab_data_features/'
@@ -115,36 +119,51 @@ def main():
             print(f"Error reading patient {patient_id}: {str(e)}")
             continue
 
-    # Concatenate all patient DataFrames into one
+    #######################################
+    ## Concatenate all patient DataFrames into one
     collection_df_imputed = pd.concat(patient_dfs_imputed, ignore_index=True)
     collection_df_original = pd.concat(patient_dfs_original, ignore_index=True)
 
-    # Save the time series clinical matrices to CSV files
+    ## Save the time series clinical matrices to CSV files
     output_csv_path_imputed = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_imputed.csv')
     output_csv_path_original = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_original.csv')
     collection_df_imputed.to_csv(output_csv_path_imputed, index=False)
     collection_df_original.to_csv(output_csv_path_original, index=False)
 
-
-    # Sort clinical features based on the list of laboratory features
+    #######################################
+    ## Sort clinical features based on the list of laboratory features
     collection_df_imputed_sorted = sort_clinical_features(collection_df_imputed, df_lab_features)
     collection_df_original_sorted = sort_clinical_features(collection_df_original, df_lab_features)
 
-    # Save the time series clinical matrices to CSV files
+    ## Save the time series clinical matrices to CSV files
     output_csv_path_imputed = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_imputed_sorted.csv')
     output_csv_path_original = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_original_sorted.csv')
     collection_df_imputed_sorted.to_csv(output_csv_path_imputed, index=False)
     collection_df_original_sorted.to_csv(output_csv_path_original, index=False)
 
-    # Normalize DataFrame values between 0 and 1
+    #######################################
+    ## Normalize DataFrame values between 0 and 1
     collection_df_imputed_sorted_normalized = normalize_df(collection_df_imputed_sorted)
     collection_df_original_sorted_normalized = normalize_df(collection_df_original_sorted)
 
-    # Save the time series clinical matrices to CSV files
+    ## Save the time series clinical matrices to CSV files
     output_csv_path_imputed = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_imputed_sorted_normalized.csv')
     output_csv_path_original = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_original_sorted_normalized.csv')
     collection_df_imputed_sorted_normalized.to_csv(output_csv_path_imputed, index=False)
     collection_df_original_sorted_normalized.to_csv(output_csv_path_original, index=False)
+
+    #######################################
+    ## Replace NaN values with -1
+    # Replace NaN or empty values with -1
+    collection_df_imputed_sorted_filled = replace_nan_empty(collection_df_imputed_sorted_normalized)
+    collection_df_original_sorted_filled = replace_nan_empty(collection_df_original_sorted_normalized)
+
+    ## Save the time series clinical matrices to CSV files
+    output_csv_path_imputed = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_imputed_sorted_normalized_filled.csv')
+    output_csv_path_original = os.path.join(dir_path, f'04_LongCovid_IDS_keys_clinical_data-{init_day}_to_{end_day}_original_sorted_normalized_filled.csv')
+    collection_df_imputed_sorted_filled.to_csv(output_csv_path_imputed, index=False)
+    collection_df_original_sorted_filled.to_csv(output_csv_path_original, index=False)
+
 
 if __name__ == "__main__":
     main()
