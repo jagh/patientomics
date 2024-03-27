@@ -9,11 +9,7 @@ print(sys.path)
 
 import os
 import pandas as pd
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from sklearn.preprocessing import StandardScaler
-# from scipy.cluster import hierarchy
-# import dendroheatmap as dhm
+import numpy as np
 
 
 
@@ -132,15 +128,6 @@ def hierarchical_clustering(df, method='average', metric='euclidean', figsize=(1
 # # Call the hierarchical_clustering function
 # hierarchical_clustering(df, method='average', metric='euclidean', figsize=(12, 30), center=10)
     
-
-
-
-
-
-
-
-
-
 
 
 
